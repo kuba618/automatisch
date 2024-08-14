@@ -1,19 +1,21 @@
 import * as React from 'react';
 import MuiTextField from '@mui/material/TextField';
 import CircularProgress from '@mui/material/CircularProgress';
+import PropTypes from 'prop-types';
 
 import useDynamicFields from 'hooks/useDynamicFields';
 import useDynamicData from 'hooks/useDynamicData';
 import PowerInput from 'components/PowerInput';
+import CodeEditor from 'components/CodeEditor';
 import TextField from 'components/TextField';
 import ControlledAutocomplete from 'components/ControlledAutocomplete';
 import ControlledCustomAutocomplete from 'components/ControlledCustomAutocomplete';
 import DynamicField from 'components/DynamicField';
+import { FieldPropType } from 'propTypes/propTypes';
 
 const optionGenerator = (options) =>
   options?.map(({ name, value }) => ({ label: name, value: value }));
-
-export default function InputCreator(props) {
+function InputCreator(props) {
   const {
     onChange,
     onBlur,
@@ -80,6 +82,7 @@ export default function InputCreator(props) {
             disabled={disabled}
             showOptionValue={showOptionValue}
             shouldUnregister={shouldUnregister}
+            componentsProps={{ popper: { className: 'nowheel' } }}
           />
         )}
 
@@ -120,6 +123,26 @@ export default function InputCreator(props) {
             shouldUnregister={shouldUnregister}
           />
         ))}
+      </React.Fragment>
+    );
+  }
+
+  if (type === 'code') {
+    return (
+      <React.Fragment>
+        <CodeEditor
+          key={computedName}
+          defaultValue={value}
+          required={required}
+          readOnly={readOnly || disabled}
+          name={computedName}
+          data-test={`${computedName}-text`}
+          label={label}
+          fullWidth
+          helperText={description}
+          shouldUnregister={shouldUnregister}
+          disabled={disabled}
+        />
       </React.Fragment>
     );
   }
@@ -178,6 +201,7 @@ export default function InputCreator(props) {
           helperText={description}
           clickToCopy={schema.clickToCopy}
           shouldUnregister={shouldUnregister}
+          disabled={disabled}
         />
 
         {isDynamicFieldsLoading && !additionalFields?.length && (
@@ -202,3 +226,16 @@ export default function InputCreator(props) {
   }
   return <React.Fragment />;
 }
+
+InputCreator.propTypes = {
+  onChange: PropTypes.func,
+  onBlur: PropTypes.func,
+  schema: FieldPropType.isRequired,
+  namePrefix: PropTypes.string,
+  stepId: PropTypes.string,
+  disabled: PropTypes.bool,
+  showOptionValue: PropTypes.bool,
+  shouldUnregister: PropTypes.bool,
+};
+
+export default InputCreator;

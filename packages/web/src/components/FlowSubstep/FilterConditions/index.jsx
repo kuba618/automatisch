@@ -1,8 +1,8 @@
+import PropTypes from 'prop-types';
 import * as React from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useFormContext, useWatch } from 'react-hook-form';
 import Stack from '@mui/material/Stack';
-import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
@@ -11,15 +11,19 @@ import AddIcon from '@mui/icons-material/Add';
 import useFormatMessage from 'hooks/useFormatMessage';
 import InputCreator from 'components/InputCreator';
 import { EditorContext } from 'contexts/Editor';
+import { Grid } from '@mui/material';
+
 const createGroupItem = () => ({
   key: '',
   operator: operators[0].value,
   value: '',
   id: uuidv4(),
 });
+
 const createGroup = () => ({
   and: [createGroupItem()],
 });
+
 const operators = [
   {
     label: 'Equal',
@@ -54,6 +58,7 @@ const operators = [
     value: 'not_contains',
   },
 ];
+
 const createStringArgument = (argumentOptions) => {
   return {
     ...argumentOptions,
@@ -62,6 +67,7 @@ const createStringArgument = (argumentOptions) => {
     variables: true,
   };
 };
+
 const createDropdownArgument = (argumentOptions) => {
   return {
     ...argumentOptions,
@@ -69,28 +75,35 @@ const createDropdownArgument = (argumentOptions) => {
     type: 'dropdown',
   };
 };
+
 function FilterConditions(props) {
   const { stepId } = props;
   const formatMessage = useFormatMessage();
   const { control, setValue, getValues } = useFormContext();
   const groups = useWatch({ control, name: 'parameters.or' });
   const editorContext = React.useContext(EditorContext);
+
   React.useEffect(function addInitialGroupWhenEmpty() {
     const groups = getValues('parameters.or');
+
     if (!groups) {
       setValue('parameters.or', [createGroup()]);
     }
   }, []);
+
   const appendGroup = React.useCallback(() => {
     const values = getValues('parameters.or');
     setValue('parameters.or', values.concat(createGroup()));
   }, []);
+
   const appendGroupItem = React.useCallback((index) => {
     const group = getValues(`parameters.or.${index}.and`);
     setValue(`parameters.or.${index}.and`, group.concat(createGroupItem()));
   }, []);
+
   const removeGroupItem = React.useCallback((groupIndex, groupItemIndex) => {
     const group = getValues(`parameters.or.${groupIndex}.and`);
+
     if (group.length === 1) {
       const groups = getValues('parameters.or');
       setValue(
@@ -104,11 +117,12 @@ function FilterConditions(props) {
       );
     }
   }, []);
+
   return (
     <React.Fragment>
       <Stack sx={{ width: '100%' }} direction="column" spacing={2} mt={2}>
         {groups?.map((group, groupIndex) => (
-          <>
+          <React.Fragment key={groupIndex}>
             {groupIndex !== 0 && <Divider />}
 
             <Typography variant="subtitle2" gutterBottom>
@@ -119,19 +133,16 @@ function FilterConditions(props) {
             </Typography>
 
             {group?.and?.map((groupItem, groupItemIndex) => (
-              <Stack direction="row" spacing={2} key={`item-${groupItem.id}`}>
-                <Stack
-                  direction={{ xs: 'column', sm: 'row' }}
-                  spacing={{ xs: 2 }}
-                  sx={{ display: 'flex', flex: 1 }}
+              <Grid container key={`item-${groupItem.id}`}>
+                <Grid
+                  container
+                  spacing={2}
+                  item
+                  xs={12}
+                  sm={11}
+                  sx={{ order: { xs: 2, sm: 1 } }}
                 >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flex: '1 0 0px',
-                      maxWidth: ['100%', '33%'],
-                    }}
-                  >
+                  <Grid item xs={12} md={4}>
                     <InputCreator
                       schema={createStringArgument({
                         key: `or.${groupIndex}.and.${groupItemIndex}.key`,
@@ -141,15 +152,8 @@ function FilterConditions(props) {
                       stepId={stepId}
                       disabled={editorContext.readOnly}
                     />
-                  </Box>
-
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flex: '1 0 0px',
-                      maxWidth: ['100%', '33%'],
-                    }}
-                  >
+                  </Grid>
+                  <Grid item xs={12} md={4}>
                     <InputCreator
                       schema={createDropdownArgument({
                         key: `or.${groupIndex}.and.${groupItemIndex}.operator`,
@@ -160,15 +164,8 @@ function FilterConditions(props) {
                       stepId={stepId}
                       disabled={editorContext.readOnly}
                     />
-                  </Box>
-
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flex: '1 0 0px',
-                      maxWidth: ['100%', '33%'],
-                    }}
-                  >
+                  </Grid>
+                  <Grid item xs={12} md={4}>
                     <InputCreator
                       schema={createStringArgument({
                         key: `or.${groupIndex}.and.${groupItemIndex}.value`,
@@ -178,18 +175,28 @@ function FilterConditions(props) {
                       stepId={stepId}
                       disabled={editorContext.readOnly}
                     />
-                  </Box>
-                </Stack>
-
-                <IconButton
-                  size="small"
-                  edge="start"
-                  onClick={() => removeGroupItem(groupIndex, groupItemIndex)}
-                  sx={{ width: 61, height: 61 }}
-                >
-                  <RemoveIcon />
-                </IconButton>
-              </Stack>
+                  </Grid>
+                </Grid>
+                <Grid item xs={12} sm={1} sx={{ order: { xs: 1, sm: 2 } }}>
+                  <Stack justifyContent="center" alignItems="flex-end">
+                    <IconButton
+                      size="small"
+                      edge="start"
+                      onClick={() =>
+                        removeGroupItem(groupIndex, groupItemIndex)
+                      }
+                      sx={{
+                        width: 40,
+                        height: 40,
+                        mb: { xs: 2, sm: 0 },
+                      }}
+                      disabled={groups.length === 1 && group.and.length === 1}
+                    >
+                      <RemoveIcon />
+                    </IconButton>
+                  </Stack>
+                </Grid>
+              </Grid>
             ))}
 
             <Stack spacing={1} direction="row">
@@ -213,10 +220,15 @@ function FilterConditions(props) {
                 </IconButton>
               )}
             </Stack>
-          </>
+          </React.Fragment>
         ))}
       </Stack>
     </React.Fragment>
   );
 }
+
+FilterConditions.propTypes = {
+  stepId: PropTypes.string.isRequired,
+};
+
 export default FilterConditions;

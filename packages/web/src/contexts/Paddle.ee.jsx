@@ -1,10 +1,11 @@
+import PropTypes from 'prop-types';
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import * as URLS from 'config/urls';
 import useCloud from 'hooks/useCloud';
 import usePaddleInfo from 'hooks/usePaddleInfo.ee';
-import apolloClient from 'graphql/client';
+import { useQueryClient } from '@tanstack/react-query';
 
 export const PaddleContext = React.createContext({
   loaded: false,
@@ -17,6 +18,7 @@ export const PaddleProvider = (props) => {
   const { data } = usePaddleInfo();
   const sandbox = data?.data?.sandbox;
   const vendorId = data?.data?.vendorId;
+  const queryClient = useQueryClient();
 
   const [loaded, setLoaded] = React.useState(false);
 
@@ -29,8 +31,12 @@ export const PaddleProvider = (props) => {
         if (completed) {
           // Paddle has side effects in the background,
           // so we need to refetch the relevant queries
-          await apolloClient.refetchQueries({
-            include: ['GetTrialStatus', 'GetBillingAndUsage'],
+          await queryClient.refetchQueries({
+            queryKey: ['users', 'me', 'trial'],
+          });
+
+          await queryClient.refetchQueries({
+            queryKey: ['users', 'me', 'subscription'],
           });
 
           navigate(URLS.SETTINGS_BILLING_AND_USAGE, {
@@ -39,7 +45,7 @@ export const PaddleProvider = (props) => {
         }
       }
     },
-    [navigate],
+    [navigate, queryClient],
   );
 
   const value = React.useMemo(() => {
@@ -94,4 +100,8 @@ export const PaddleProvider = (props) => {
   return (
     <PaddleContext.Provider value={value}>{children}</PaddleContext.Provider>
   );
+};
+
+PaddleProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };

@@ -5,8 +5,10 @@ export const EXECUTION = (executionId) => `/executions/${executionId}`;
 export const LOGIN = '/login';
 export const LOGIN_CALLBACK = `${LOGIN}/callback`;
 export const SIGNUP = '/sign-up';
+export const ACCEPT_INVITATON = '/accept-invitation';
 export const FORGOT_PASSWORD = '/forgot-password';
 export const RESET_PASSWORD = '/reset-password';
+export const INSTALLATION = '/installation';
 export const APPS = '/apps';
 export const NEW_APP_CONNECTION = '/apps/new';
 export const APP = (appKey) => `/app/${appKey}`;
@@ -17,13 +19,13 @@ export const APP_ADD_CONNECTION = (appKey, shared = false) =>
   `/app/${appKey}/connections/add?shared=${shared}`;
 export const APP_ADD_CONNECTION_WITH_AUTH_CLIENT_ID = (
   appKey,
-  appAuthClientId
+  appAuthClientId,
 ) => `/app/${appKey}/connections/add?appAuthClientId=${appAuthClientId}`;
 export const APP_ADD_CONNECTION_PATTERN = '/app/:appKey/connections/add';
 export const APP_RECONNECT_CONNECTION = (
   appKey,
   connectionId,
-  appAuthClientId
+  appAuthClientId,
 ) => {
   const path = `/app/${appKey}/connections/${connectionId}/reconnect`;
   if (appAuthClientId) {
@@ -95,6 +97,8 @@ export const ADMIN_APP_AUTH_CLIENT = (appKey, id) =>
 export const ADMIN_APP_AUTH_CLIENTS_CREATE = (appKey) =>
   `${ADMIN_SETTINGS}/apps/${appKey}/auth-clients/create`;
 export const DASHBOARD = FLOWS;
-// External links
-export const WEBHOOK_DOCS =
-  'https://automatisch.io/docs/apps/webhooks/connection';
+
+// External links and paths
+// The paths are sensitive for their relativity.
+export const WEBHOOK_DOCS_PATH =
+  './apps/webhooks/connection';

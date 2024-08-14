@@ -17,6 +17,7 @@ import Container from 'components/Container';
 import PageTitle from 'components/PageTitle';
 import SearchInput from 'components/SearchInput';
 import useFormatMessage from 'hooks/useFormatMessage';
+import useCurrentUserAbility from 'hooks/useCurrentUserAbility';
 import * as URLS from 'config/urls';
 import useLazyFlows from 'hooks/useLazyFlows';
 
@@ -26,17 +27,21 @@ export default function Flows() {
   const page = parseInt(searchParams.get('page') || '', 10) || 1;
   const [flowName, setFlowName] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
+  const currentUserAbility = useCurrentUserAbility();
 
-  const { data, mutate } = useLazyFlows(
+  const { data, mutate: fetchFlows } = useLazyFlows(
     { flowName, page },
     {
-      onSuccess: () => {
+      onSettled: () => {
         setIsLoading(false);
       },
     },
   );
 
-  const fetchData = React.useMemo(() => debounce(mutate, 300), [mutate]);
+  const fetchData = React.useMemo(
+    () => debounce(fetchFlows, 300),
+    [fetchFlows],
+  );
 
   React.useEffect(() => {
     setIsLoading(true);
@@ -110,11 +115,20 @@ export default function Flows() {
           <CircularProgress sx={{ display: 'block', margin: '20px auto' }} />
         )}
         {!isLoading &&
-          flows?.map((flow) => <FlowRow key={flow.id} flow={flow} />)}
+          flows?.map((flow) => (
+            <FlowRow
+              key={flow.id}
+              flow={flow}
+              onDuplicateFlow={fetchFlows}
+              onDeleteFlow={fetchFlows}
+            />
+          ))}
         {!isLoading && !hasFlows && (
           <NoResultFound
             text={formatMessage('flows.noFlows')}
-            to={URLS.CREATE_FLOW}
+            {...(currentUserAbility.can('create', 'Flow') && {
+              to: URLS.CREATE_FLOW,
+            })}
           />
         )}
         {!isLoading && pageInfo && pageInfo.totalPages > 1 && (

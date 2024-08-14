@@ -17,6 +17,7 @@ import useFormatMessage from 'hooks/useFormatMessage';
 import { generateExternalLink } from 'helpers/translationValues';
 import { Form } from './style';
 import useAppAuth from 'hooks/useAppAuth';
+import { useQueryClient } from '@tanstack/react-query';
 
 function AddAppConnection(props) {
   const { application, connectionId, onClose } = props;
@@ -36,6 +37,7 @@ function AddAppConnection(props) {
     appAuthClientId,
     useShared: !!appAuthClientId,
   });
+  const queryClient = useQueryClient();
 
   React.useEffect(function relayProviderData() {
     if (window.opener) {
@@ -78,6 +80,10 @@ function AddAppConnection(props) {
         const response = await authenticate({
           fields: data,
         });
+
+        await queryClient.invalidateQueries({
+          queryKey: ['apps', key, 'connections'],
+        });
         onClose(response);
       } catch (err) {
         const error = err;
@@ -102,7 +108,11 @@ function AddAppConnection(props) {
   if (appAuthClientId) return <React.Fragment />;
 
   return (
-    <Dialog open={true} onClose={onClose} data-test="add-app-connection-dialog">
+    <Dialog
+      open={true}
+      onClose={() => onClose()}
+      data-test="add-app-connection-dialog"
+    >
       <DialogTitle>
         {hasConnection
           ? formatMessage('app.reconnectConnection')
@@ -145,6 +155,7 @@ function AddAppConnection(props) {
               color="primary"
               sx={{ boxShadow: 2 }}
               loading={inProgress}
+              disabled={!authenticate}
               data-test="create-connection-button"
             >
               {formatMessage('addAppConnection.submit')}

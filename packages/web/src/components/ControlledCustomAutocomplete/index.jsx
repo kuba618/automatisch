@@ -61,38 +61,51 @@ function ControlledCustomAutocomplete(props) {
   const [isSingleChoice, setSingleChoice] = React.useState(undefined);
   const priorStepsWithExecutions = React.useContext(StepExecutionsContext);
   const editorRef = React.useRef(null);
+  const mountedRef = React.useRef(false);
+
   const renderElement = React.useCallback(
     (props) => <Element {...props} disabled={disabled} />,
     [disabled],
   );
+
   const [editor] = React.useState(() => customizeEditor(createEditor()));
+
   const [showVariableSuggestions, setShowVariableSuggestions] =
     React.useState(false);
   let dependsOnValues = [];
   if (dependsOn?.length) {
     dependsOnValues = watch(dependsOn);
   }
+
   React.useEffect(() => {
     const ref = ReactEditor.toDOMNode(editor, editor);
     resizeObserver.observe(ref);
     return () => resizeObserver.unobserve(ref);
   }, []);
+
   const promoteValue = () => {
     const serializedValue = serialize(editor.children);
     controllerOnChange(serializedValue);
   };
+
   const resizeObserver = React.useMemo(function syncCustomOptionsPosition() {
     return new ResizeObserver(() => {
       forceUpdate();
     });
   }, []);
+
   React.useEffect(() => {
-    const hasDependencies = dependsOnValues.length;
-    if (hasDependencies) {
-      // Reset the field when a dependent has been updated
-      resetEditor(editor);
+    if (mountedRef.current) {
+      const hasDependencies = dependsOnValues.length;
+      if (hasDependencies) {
+        // Reset the field when a dependent has been updated
+        resetEditor(editor);
+      }
+    } else {
+      mountedRef.current = true;
     }
   }, dependsOnValues);
+
   React.useEffect(
     function updateInitialValue() {
       const hasOptions = options.length;
@@ -110,16 +123,19 @@ function ControlledCustomAutocomplete(props) {
     },
     [isInitialValueSet, options, loading],
   );
+
   React.useEffect(() => {
     if (!showVariableSuggestions && value !== serialize(editor.children)) {
       promoteValue();
     }
   }, [showVariableSuggestions]);
+
   const hideSuggestionsOnShift = (event) => {
     if (event.code === 'Tab') {
       setShowVariableSuggestions(false);
     }
   };
+
   const handleKeyDown = (event) => {
     hideSuggestionsOnShift(event);
     if (event.code === 'Tab') {
@@ -129,15 +145,18 @@ function ControlledCustomAutocomplete(props) {
       event.preventDefault();
     }
   };
+
   const stepsWithVariables = React.useMemo(() => {
     return processStepWithExecutions(priorStepsWithExecutions);
   }, [priorStepsWithExecutions]);
+
   const handleVariableSuggestionClick = React.useCallback(
     (variable) => {
       insertVariable(editor, variable, stepsWithVariables);
     },
     [stepsWithVariables],
   );
+
   const handleOptionClick = React.useCallback(
     (event, option) => {
       event.stopPropagation();
@@ -147,17 +166,20 @@ function ControlledCustomAutocomplete(props) {
     },
     [stepsWithVariables],
   );
+
   const handleClearButtonClick = (event) => {
     event.stopPropagation();
     resetEditor(editor);
     promoteValue();
     setSingleChoice(undefined);
   };
+
   const reset = (tabIndex) => {
     const isOptions = tabIndex === 0;
     setSingleChoice(isOptions);
     resetEditor(editor, { focus: true });
   };
+
   return (
     <Slate
       editor={editor}

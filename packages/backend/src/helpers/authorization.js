@@ -7,6 +7,10 @@ const authorizationList = {
     action: 'read',
     subject: 'User',
   },
+  'GET /api/v1/users/:userId/apps': {
+    action: 'read',
+    subject: 'Connection',
+  },
   'GET /api/v1/flows/:flowId': {
     action: 'read',
     subject: 'Flow',
@@ -24,6 +28,10 @@ const authorizationList = {
     subject: 'Flow',
   },
   'POST /api/v1/steps/:stepId/dynamic-fields': {
+    action: 'update',
+    subject: 'Flow',
+  },
+  'POST /api/v1/steps/:stepId/dynamic-data': {
     action: 'update',
     subject: 'Flow',
   },

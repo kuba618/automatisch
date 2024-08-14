@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { useMutation, useQuery } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -8,64 +8,69 @@ import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import Snackbar from '@mui/material/Snackbar';
+import { ReactFlowProvider } from 'reactflow';
+
 import { EditorProvider } from 'contexts/Editor';
 import EditableTypography from 'components/EditableTypography';
 import Container from 'components/Container';
 import Editor from 'components/Editor';
+import Can from 'components/Can';
 import useFormatMessage from 'hooks/useFormatMessage';
 import { UPDATE_FLOW_STATUS } from 'graphql/mutations/update-flow-status';
 import { UPDATE_FLOW } from 'graphql/mutations/update-flow';
-import { GET_FLOW } from 'graphql/queries/get-flow';
 import * as URLS from 'config/urls';
 import { TopBar } from './style';
+import useFlow from 'hooks/useFlow';
+import { useQueryClient } from '@tanstack/react-query';
+import EditorNew from 'components/EditorNew/EditorNew';
+
+const useNewFlowEditor = process.env.REACT_APP_USE_NEW_FLOW_EDITOR === 'true';
 
 export default function EditorLayout() {
   const { flowId } = useParams();
   const formatMessage = useFormatMessage();
   const [updateFlow] = useMutation(UPDATE_FLOW);
   const [updateFlowStatus] = useMutation(UPDATE_FLOW_STATUS);
-  const { data, loading } = useQuery(GET_FLOW, { variables: { id: flowId } });
-  const flow = data?.getFlow;
+  const { data, isLoading: isFlowLoading } = useFlow(flowId);
+  const flow = data?.data;
+  const queryClient = useQueryClient();
+
   const onFlowNameUpdate = React.useCallback(
     async (name) => {
-      await updateFlow({
-        variables: {
-          input: {
-            id: flowId,
-            name,
+      try {
+        await updateFlow({
+          variables: {
+            input: {
+              id: flowId,
+              name,
+            },
           },
-        },
-        optimisticResponse: {
-          updateFlow: {
-            __typename: 'Flow',
-            id: flow?.id,
-            name,
-          },
-        },
-      });
+        });
+
+        await queryClient.invalidateQueries({ queryKey: ['flows', flowId] });
+      } catch (e) {}
     },
-    [flow?.id],
+    [flowId, queryClient],
   );
+
   const onFlowStatusUpdate = React.useCallback(
     async (active) => {
-      await updateFlowStatus({
-        variables: {
-          input: {
-            id: flowId,
-            active,
+      try {
+        await updateFlowStatus({
+          variables: {
+            input: {
+              id: flowId,
+              active,
+            },
           },
-        },
-        optimisticResponse: {
-          updateFlowStatus: {
-            __typename: 'Flow',
-            id: flow?.id,
-            active,
-          },
-        },
-      });
+        });
+
+        await queryClient.invalidateQueries({ queryKey: ['flows', flowId] });
+      } catch (err) {}
     },
-    [flow?.id],
+    [flowId, queryClient],
   );
+
   return (
     <>
       <TopBar
@@ -94,7 +99,7 @@ export default function EditorLayout() {
             </IconButton>
           </Tooltip>
 
-          {!loading && (
+          {!isFlowLoading && (
             <EditableTypography
               variant="body1"
               onConfirm={onFlowNameUpdate}
@@ -107,29 +112,47 @@ export default function EditorLayout() {
         </Box>
 
         <Box pr={1}>
-          <Button
-            variant="contained"
-            size="small"
-            onClick={() => onFlowStatusUpdate(!flow.active)}
-            data-test={
-              flow?.active ? 'unpublish-flow-button' : 'publish-flow-button'
-            }
-          >
-            {flow?.active
-              ? formatMessage('flowEditor.unpublish')
-              : formatMessage('flowEditor.publish')}
-          </Button>
+          <Can I="publish" a="Flow" passThrough>
+            {(allowed) => (
+              <Button
+                disabled={!allowed || !flow}
+                variant="contained"
+                size="small"
+                onClick={() => onFlowStatusUpdate(!flow.active)}
+                data-test={
+                  flow?.active ? 'unpublish-flow-button' : 'publish-flow-button'
+                }
+              >
+                {flow?.active
+                  ? formatMessage('flowEditor.unpublish')
+                  : formatMessage('flowEditor.publish')}
+              </Button>
+            )}
+          </Can>
         </Box>
       </TopBar>
-      <Stack direction="column" height="100%">
-        <Container maxWidth="md">
-          <EditorProvider value={{ readOnly: !!flow?.active }}>
-            {!flow && !loading && 'not found'}
 
-            {flow && <Editor flow={flow} />}
-          </EditorProvider>
-        </Container>
-      </Stack>
+      {useNewFlowEditor ? (
+        <Stack direction="column" height="100%" flexGrow={1}>
+          <Stack direction="column" flexGrow={1}>
+            <EditorProvider value={{ readOnly: !!flow?.active }}>
+              <ReactFlowProvider>
+                {!flow && !isFlowLoading && 'not found'}
+                {flow && <EditorNew flow={flow} />}
+              </ReactFlowProvider>
+            </EditorProvider>
+          </Stack>
+        </Stack>
+      ) : (
+        <Stack direction="column" height="100%">
+          <Container maxWidth="md">
+            <EditorProvider value={{ readOnly: !!flow?.active }}>
+              {!flow && !isFlowLoading && 'not found'}
+              {flow && <Editor flow={flow} />}
+            </EditorProvider>
+          </Container>
+        </Stack>
+      )}
 
       <Snackbar
         data-test="flow-cannot-edit-info-snackbar"
