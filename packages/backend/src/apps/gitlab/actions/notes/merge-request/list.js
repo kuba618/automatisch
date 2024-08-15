@@ -53,16 +53,14 @@ export default defineAction({
   async run($) {
     const { id, merge_request_iid, ...params } = $.step.parameters;
 
-    let response = await $.http.get(
+    const firstPageRequest = await $.http.get(
       `/api/v4/projects/${encodeURI(
         id
       )}/merge_requests/${merge_request_iid}/notes`,
-      {
         params,
-      }
     );
-    response = paginateAll($, response);
+    const response = await paginateAll($, firstPageRequest);
 
-    $.setActionItem({ raw: response.data });
+    $.setActionItem({ raw: response });
   },
 });

@@ -1,4 +1,5 @@
 import defineAction from '../../../../helpers/define-action.js';
+import paginateAll from '../../common/paginate-all.js';
 
 export default defineAction({
   name: 'Issue: List Issue Relations',
@@ -27,10 +28,12 @@ export default defineAction({
   async run($) {
     const { id, issue_iid } = $.step.parameters;
 
-    const response = await $.http.get(
+    const firstPageRequest = await $.http.get(
       `/api/v4/projects/${id}/issues/${issue_iid}/links`
     );
 
-    $.setActionItem({ raw: response.data });
+    const response = await paginateAll($, firstPageRequest);
+
+    $.setActionItem({ raw: response });
   },
 });

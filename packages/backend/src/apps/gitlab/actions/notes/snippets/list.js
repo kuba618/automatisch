@@ -17,7 +17,7 @@ export default defineAction({
     {
       label: 'Snippet ID',
       key: 'snippet_id',
-      type: 'integer',
+      type: 'string',
       required: true,
       description: 'The ID of a project snippet.',
       variables: true,
@@ -59,8 +59,8 @@ export default defineAction({
         params,
       }
     );
-    response = paginateAll($, response);
+    response = await paginateAll($, response);
 
-    $.setActionItem({ raw: response.data });
+    $.setActionItem({ raw: response });
   },
 });

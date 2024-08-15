@@ -16,7 +16,7 @@ export default defineAction({
     {
       label: 'Issue Internal ID',
       key: 'issue_iid',
-      type: 'integer',
+      type: 'string',
       required: true,
       description: "The internal ID of a project's issue.",
       variables: true,
@@ -57,9 +57,7 @@ export default defineAction({
 
     const response = await $.http.post(
       `/api/v4/projects/${encodeURI(id)}/issues/${issue_iid}/notes`,
-      {
         params,
-      }
     );
 
     $.setActionItem({ raw: response.data });

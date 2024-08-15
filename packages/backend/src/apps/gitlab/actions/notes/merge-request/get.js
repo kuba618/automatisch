@@ -16,7 +16,7 @@ export default defineAction({
     {
       label: 'Merge Request IID',
       key: 'merge_request_iid',
-      type: 'integer',
+      type: 'string',
       required: true,
       description: 'The IID of a project merge request.',
       variables: true,
@@ -24,7 +24,7 @@ export default defineAction({
     {
       label: 'Note ID',
       key: 'note_id',
-      type: 'integer',
+      type: 'string',
       required: true,
       description: 'The ID of a merge request note.',
       variables: true,

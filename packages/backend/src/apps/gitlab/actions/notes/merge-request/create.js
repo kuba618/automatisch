@@ -17,7 +17,7 @@ export default defineAction({
     {
       label: 'Merge Request IID',
       key: 'merge_request_iid',
-      type: 'integer',
+      type: 'string',
       required: true,
       description: 'The IID of a project merge request.',
       variables: true,
@@ -57,7 +57,7 @@ export default defineAction({
       `/api/v4/projects/${encodeURI(
         id
       )}/merge_requests/${merge_request_iid}/notes`,
-      { params }
+       params
     );
 
     $.setActionItem({ raw: response.data });

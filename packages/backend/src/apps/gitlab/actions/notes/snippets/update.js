@@ -16,7 +16,7 @@ export default defineAction({
     {
       label: 'Snippet ID',
       key: 'snippet_id',
-      type: 'integer',
+      type: 'string',
       required: true,
       description: 'The ID of a snippet.',
       variables: true,
@@ -24,7 +24,7 @@ export default defineAction({
     {
       label: 'Note ID',
       key: 'note_id',
-      type: 'integer',
+      type: 'string',
       required: true,
       description: 'The ID of a snippet note.',
       variables: true,
@@ -46,9 +46,7 @@ export default defineAction({
       `/api/v4/projects/${encodeURI(
         id
       )}/snippets/${snippet_id}/notes/${note_id}`,
-      {
         params,
-      }
     );
 
     $.setActionItem({ raw: response.data });

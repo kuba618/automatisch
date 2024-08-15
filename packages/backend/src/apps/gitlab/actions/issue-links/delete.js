@@ -50,9 +50,7 @@ export default defineAction({
 
     const response = await $.http.delete(
       `/api/v4/projects/${id}/issues/${issue_iid}/links/${issue_link_id}`,
-      {
         params,
-      }
     );
 
     $.setActionItem({ raw: response.data });

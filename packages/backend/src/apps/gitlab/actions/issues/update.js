@@ -187,9 +187,7 @@ export default defineAction({
 
     const response = await $.http.put(
       `/api/v4/projects/${encodeURI(id)}/issues/${issue_iid}`,
-      {
         params,
-      }
     );
 
     $.setActionItem({ raw: response.data });

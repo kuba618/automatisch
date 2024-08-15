@@ -60,9 +60,7 @@ export default defineAction({
 
     const response = await $.http.post(
       `/api/v4/projects/${id}/issues/${issue_iid}/links`,
-      {
         params,
-      }
     );
 
     $.setActionItem({ raw: response.data });

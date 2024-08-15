@@ -26,10 +26,8 @@ export default defineAction({
   async run($) {
     const { id, issue_iid } = $.step.parameters;
 
-    const response = await $.http.delete(
+    await $.http.delete(
       `/api/v4/projects/${encodeURI(id)}/issues/${issue_iid}`
     );
-
-    $.setActionItem({ raw: response.data });
   },
 });

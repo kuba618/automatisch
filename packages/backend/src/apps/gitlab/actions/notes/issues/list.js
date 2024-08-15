@@ -17,7 +17,7 @@ export default defineAction({
     {
       label: 'Issue Internal ID',
       key: 'issue_iid',
-      type: 'integer',
+      type: 'string',
       required: true,
       description: "The internal ID of a project's issue.",
       variables: true,
@@ -53,14 +53,13 @@ export default defineAction({
   async run($) {
     const { id, issue_iid, ...params } = $.step.parameters;
 
-    let response = await $.http.get(
+    const firstPageRequest = await $.http.get(
       `/api/v4/projects/${encodeURI(id)}/issues/${issue_iid}/notes`,
-      {
         params,
-      }
     );
-    response = paginateAll($, response);
 
-    $.setActionItem({ raw: response.data });
+    const response = await paginateAll($, firstPageRequest);
+
+    $.setActionItem({ raw: response });
   },
 });

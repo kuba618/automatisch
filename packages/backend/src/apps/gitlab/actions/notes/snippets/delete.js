@@ -16,7 +16,7 @@ export default defineAction({
     {
       label: 'Snippet ID',
       key: 'snippet_id',
-      type: 'integer',
+      type: 'string',
       required: true,
       description: 'The ID of a snippet.',
       variables: true,
@@ -24,7 +24,7 @@ export default defineAction({
     {
       label: 'Note ID',
       key: 'note_id',
-      type: 'integer',
+      type: 'string',
       required: true,
       description: 'The ID of a note.',
       variables: true,
@@ -34,12 +34,10 @@ export default defineAction({
   async run($) {
     const { id, snippet_id, note_id } = $.step.parameters;
 
-    const response = await $.http.delete(
+    await $.http.delete(
       `/api/v4/projects/${encodeURI(
         id
       )}/snippets/${snippet_id}/notes/${note_id}`
     );
-
-    $.setActionItem({ raw: response.data });
   },
 });

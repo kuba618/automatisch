@@ -300,14 +300,15 @@ export default defineAction({
       params.iids = params.iids.split(',').map((iid) => iid.trim());
     }
 
-    let response = await $.http.get(
+    const firstPageRequest = await $.http.get(
       `/api/v4/projects/${encodeURI(id)}/issues`,
       {
         params,
       }
     );
-    response = paginateAll($, response);
 
-    $.setActionItem({ raw: response.data });
+    const response = await paginateAll($, firstPageRequest);
+
+    $.setActionItem({ raw: response });
   },
 });

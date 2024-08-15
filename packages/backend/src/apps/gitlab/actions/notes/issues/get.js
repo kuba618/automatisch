@@ -16,7 +16,7 @@ export default defineAction({
     {
       label: 'Issue Internal ID',
       key: 'issue_iid',
-      type: 'integer',
+      type: 'string',
       required: true,
       description: "The internal ID of a project's issue.",
       variables: true,
@@ -24,7 +24,7 @@ export default defineAction({
     {
       label: 'Note ID',
       key: 'note_id',
-      type: 'integer',
+      type: 'string',
       required: true,
       description: 'The ID of an issue note.',
       variables: true,

@@ -16,7 +16,7 @@ export default defineAction({
     {
       label: 'Snippet ID',
       key: 'snippet_id',
-      type: 'integer',
+      type: 'string',
       required: true,
       description: 'The ID of a snippet.',
       variables: true,
